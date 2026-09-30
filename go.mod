@@ -8,7 +8,7 @@ require (
 	github.com/rios0rios0/gitforge v1.0.1-0.20260723193418-4150608363f0
 	github.com/rios0rios0/langforge v1.1.7
 	github.com/rios0rios0/testkit v0.3.4
-	github.com/sashabaranov/go-openai v1.42.1
+	github.com/sashabaranov/go-openai v1.43.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
