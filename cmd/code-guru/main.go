@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"slices"
 
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,16 +20,30 @@ import (
 var version = "dev"
 
 // runUpdateCheck queries the self-updater for a newer version, skipping local dev
-// builds and the self-update / version subcommands to avoid noisy/meaningless checks.
+// builds and the commands checksForUpdates leaves out.
 func runUpdateCheck(command *cobra.Command, selfUpdater repositories.SelfUpdaterRepository) {
-	if version == "dev" {
-		return
-	}
-	switch command.Name() {
-	case "self-update", "version":
+	if version == "dev" || !checksForUpdates(command) {
 		return
 	}
 	selfUpdater.CheckForUpdates()
+}
+
+// checksForUpdates reports whether running command also checks for a newer
+// release. The self-update and version subcommands skip it, to avoid noisy and
+// meaningless checks. So does `health`, the container's HEALTHCHECK probe,
+// which runs every 30 seconds where nobody reads its output, and so does
+// shell completion: `completion` runs from a shell's startup file every time a
+// shell starts, and cobra's hidden `__complete` on every TAB press. Both exit at
+// once, so a lookup started there would never be read and would only use up the
+// day's update check. `completion bash` is named `bash`, so a command is judged
+// by its ancestor directly under the root.
+func checksForUpdates(command *cobra.Command) bool {
+	for command.HasParent() && command.Parent().HasParent() {
+		command = command.Parent()
+	}
+	return !slices.Contains([]string{
+		"self-update", "version", "health", "completion", cobra.ShellCompRequestCmd,
+	}, command.Name())
 }
 
 func buildRootCommand(
