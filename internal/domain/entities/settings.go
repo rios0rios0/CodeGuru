@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	configEntities "github.com/rios0rios0/gitforge/pkg/config/domain/entities"
+	configEntities "github.com/rios0rios0/gitforge/v4/pkg/config/domain/entities"
 	"gopkg.in/yaml.v3"
 )
 

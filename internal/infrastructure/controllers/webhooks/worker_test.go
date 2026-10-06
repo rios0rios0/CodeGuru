@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+	forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

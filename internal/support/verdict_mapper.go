@@ -1,6 +1,6 @@
 package support
 
-import forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+import forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 
 // Verdict strings emitted by the AI backend response parser and the trivial
 // PR detectors. Two distinct vocabularies share this surface: the LLM

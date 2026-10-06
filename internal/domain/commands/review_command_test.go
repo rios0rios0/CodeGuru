@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+	forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 	logger "github.com/sirupsen/logrus"
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"

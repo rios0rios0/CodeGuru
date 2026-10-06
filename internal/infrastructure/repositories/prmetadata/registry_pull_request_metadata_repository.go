@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"time"
 
-	forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+	forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 
 	"github.com/rios0rios0/codeguru/internal/domain/entities"
 )

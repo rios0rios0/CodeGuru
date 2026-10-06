@@ -151,7 +151,7 @@ Common flags (all commands):
 Only add new dependencies when strictly necessary. Prefer the standard library. Current key dependencies:
 
 - `github.com/rios0rios0/cliforge` — CLI utilities and self-update support
-- `github.com/rios0rios0/gitforge` — Multi-provider Git abstraction (consumed as a published pseudo-version; no local `replace` directive)
+- `github.com/rios0rios0/gitforge/v4` — Multi-provider Git abstraction (consumed as a tagged release; no local `replace` directive)
 - `github.com/rios0rios0/langforge` — Language classification by file extension
 - `github.com/rios0rios0/testkit` — Test builder base utilities
 - `github.com/sashabaranov/go-openai` — OpenAI API client

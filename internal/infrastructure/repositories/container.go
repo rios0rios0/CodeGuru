@@ -10,9 +10,9 @@ import (
 	rulesRepo "github.com/rios0rios0/codeguru/internal/infrastructure/repositories/rules"
 	selfupdateRepo "github.com/rios0rios0/codeguru/internal/infrastructure/repositories/selfupdate"
 	"github.com/rios0rios0/codeguru/internal/infrastructure/repositories/trivial"
-	"github.com/rios0rios0/gitforge/pkg/providers/infrastructure/azuredevops"
-	"github.com/rios0rios0/gitforge/pkg/providers/infrastructure/github"
-	registry "github.com/rios0rios0/gitforge/pkg/registry/infrastructure"
+	"github.com/rios0rios0/gitforge/v4/pkg/providers/infrastructure/azuredevops"
+	"github.com/rios0rios0/gitforge/v4/pkg/providers/infrastructure/github"
+	registry "github.com/rios0rios0/gitforge/v4/pkg/registry/infrastructure"
 	"go.uber.org/dig"
 )
 
