@@ -6,8 +6,8 @@ import (
 
 	logger "github.com/sirupsen/logrus"
 
-	forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
-	registry "github.com/rios0rios0/gitforge/pkg/registry/infrastructure"
+	forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
+	registry "github.com/rios0rios0/gitforge/v4/pkg/registry/infrastructure"
 
 	"github.com/rios0rios0/codeguru/internal/domain/entities"
 )

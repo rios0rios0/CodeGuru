@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	configEntities "github.com/rios0rios0/gitforge/pkg/config/domain/entities"
+	configEntities "github.com/rios0rios0/gitforge/v4/pkg/config/domain/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

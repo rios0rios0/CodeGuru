@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	configHelpers "github.com/rios0rios0/gitforge/pkg/config/domain/helpers"
-	registry "github.com/rios0rios0/gitforge/pkg/registry/infrastructure"
+	configHelpers "github.com/rios0rios0/gitforge/v4/pkg/config/domain/helpers"
+	registry "github.com/rios0rios0/gitforge/v4/pkg/registry/infrastructure"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 

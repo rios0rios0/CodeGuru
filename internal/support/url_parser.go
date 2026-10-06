@@ -3,8 +3,8 @@ package support
 import (
 	"fmt"
 
-	gitInfra "github.com/rios0rios0/gitforge/pkg/git/infrastructure"
-	globalEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+	gitInfra "github.com/rios0rios0/gitforge/v4/pkg/git/infrastructure"
+	globalEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 )
 
 // ParsedPRURL holds the components extracted from a pull request URL.

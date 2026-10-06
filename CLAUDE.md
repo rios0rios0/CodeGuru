@@ -153,7 +153,7 @@ In the YAML path (`NewSettings`), env vars override YAML only for: trivial setti
 
 ## Key Dependencies
 
-- `github.com/rios0rios0/gitforge` — Multi-provider Git abstraction (GitHub, Azure DevOps): providers registry, `ReviewProvider` + `FileAccessProvider` interfaces, config helpers, URL parsing. Consumed as a published pseudo-version; no local `replace`. Note: `PullRequestDetail` carries no description/commit count — that is why `prmetadata` talks REST directly.
+- `github.com/rios0rios0/gitforge/v4` — Multi-provider Git abstraction (GitHub, Azure DevOps): providers registry, `ReviewProvider` + `FileAccessProvider` interfaces, config helpers, URL parsing. Consumed as a tagged release; no local `replace`. Note: `PullRequestDetail` carries no description/commit count — that is why `prmetadata` talks REST directly.
 - `github.com/rios0rios0/cliforge` — CLI utilities and self-update support
 - `github.com/rios0rios0/langforge` — Language classification by file extension
 - `github.com/rios0rios0/testkit` — Test builder base utilities

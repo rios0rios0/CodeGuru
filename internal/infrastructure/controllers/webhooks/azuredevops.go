@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+	forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/rios0rios0/codeguru/internal/support"

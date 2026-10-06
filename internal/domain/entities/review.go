@@ -1,6 +1,6 @@
 package entities
 
-import forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
+import forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
 
 // FileDiff represents a single file change within a pull request.
 type FileDiff struct {

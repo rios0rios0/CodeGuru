@@ -12,10 +12,10 @@ import (
 	"sync/atomic"
 	"testing"
 
-	configEntities "github.com/rios0rios0/gitforge/pkg/config/domain/entities"
-	"github.com/rios0rios0/gitforge/pkg/providers/infrastructure/azuredevops"
-	"github.com/rios0rios0/gitforge/pkg/providers/infrastructure/github"
-	registry "github.com/rios0rios0/gitforge/pkg/registry/infrastructure"
+	configEntities "github.com/rios0rios0/gitforge/v4/pkg/config/domain/entities"
+	"github.com/rios0rios0/gitforge/v4/pkg/providers/infrastructure/azuredevops"
+	"github.com/rios0rios0/gitforge/v4/pkg/providers/infrastructure/github"
+	registry "github.com/rios0rios0/gitforge/v4/pkg/registry/infrastructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

@@ -1,7 +1,7 @@
 package entities
 
 import (
-	configHelpers "github.com/rios0rios0/gitforge/pkg/config/domain/helpers"
+	configHelpers "github.com/rios0rios0/gitforge/v4/pkg/config/domain/helpers"
 	logger "github.com/sirupsen/logrus"
 	"go.uber.org/dig"
 )

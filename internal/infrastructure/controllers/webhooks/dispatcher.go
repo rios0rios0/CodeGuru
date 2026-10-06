@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	forgeEntities "github.com/rios0rios0/gitforge/pkg/global/domain/entities"
-	registry "github.com/rios0rios0/gitforge/pkg/registry/infrastructure"
+	forgeEntities "github.com/rios0rios0/gitforge/v4/pkg/global/domain/entities"
+	registry "github.com/rios0rios0/gitforge/v4/pkg/registry/infrastructure"
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/rios0rios0/codeguru/internal/domain/commands"
