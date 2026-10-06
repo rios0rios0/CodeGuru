@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/rios0rios0/cliforge v0.4.6
+	github.com/rios0rios0/cliforge v0.4.7
 	github.com/rios0rios0/gitforge v1.0.1-0.20260723193418-4150608363f0
 	github.com/rios0rios0/langforge v1.1.7
 	github.com/rios0rios0/testkit v0.3.4
