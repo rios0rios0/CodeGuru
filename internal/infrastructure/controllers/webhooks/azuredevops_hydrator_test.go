@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -214,6 +215,8 @@ func TestHTTPADOHydrator(t *testing.T) {
 			auth := r.Header.Get("Authorization")
 			assert.NotEmpty(t, auth, "request must carry an Authorization header")
 			assert.Contains(t, auth, "Basic ", "auth must use HTTP Basic per ADO PAT scheme")
+			assert.Equal(t, "/ExampleOrg/_apis/git/pullRequests/99999", r.URL.Path)
+			assert.Equal(t, "7.1-preview.1", r.URL.Query().Get("api-version"))
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{
 				"pullRequestId": 99999,
@@ -232,10 +235,14 @@ func TestHTTPADOHydrator(t *testing.T) {
 		}))
 		defer server.Close()
 
-		hydrator := webhooks.NewTestHTTPADOHydrator(&http.Client{Timeout: 2 * time.Second})
+		hydrator := webhooks.NewHTTPADOHydrator(routedTo(t, server))
 
 		// when
-		got, err := hydrator.Hydrate(context.Background(), server.URL+"/_apis/git/pullRequests/99999", "test-pat")
+		got, err := hydrator.Hydrate(
+			context.Background(),
+			"https://dev.azure.com/ExampleOrg/_apis/git/pullRequests/99999",
+			"test-pat",
+		)
 
 		// then
 		require.NoError(t, err)
@@ -255,10 +262,14 @@ func TestHTTPADOHydrator(t *testing.T) {
 		}))
 		defer server.Close()
 
-		hydrator := webhooks.NewTestHTTPADOHydrator(&http.Client{Timeout: 2 * time.Second})
+		hydrator := webhooks.NewHTTPADOHydrator(routedTo(t, server))
 
 		// when
-		_, err := hydrator.Hydrate(context.Background(), server.URL+"/_apis/git/pullRequests/1", "test-pat")
+		_, err := hydrator.Hydrate(
+			context.Background(),
+			"https://dev.azure.com/ExampleOrg/_apis/git/pullRequests/1",
+			"test-pat",
+		)
 
 		// then
 		require.Error(t, err)
@@ -381,6 +392,26 @@ func TestIsADOAPIHost(t *testing.T) {
 			url:  "https://github.com/_apis/git/pullRequests/1",
 			want: false,
 		},
+		{
+			name: "should reject user info that puts another host after an ADO-looking prefix",
+			url:  "https://dev.azure.com@attacker.example.com/_apis/git/pullRequests/1",
+			want: false,
+		},
+		{
+			name: "should reject a host that only starts with dev.azure.com",
+			url:  "https://dev.azure.com.attacker.example.com/_apis/git/pullRequests/1",
+			want: false,
+		},
+		{
+			name: "should reject an explicit port, which ADO REST URLs never carry",
+			url:  "https://dev.azure.com:8443/Org/_apis/git/pullRequests/1",
+			want: false,
+		},
+		{
+			name: "should reject visualstudio.com without an organization",
+			url:  "https://visualstudio.com/_apis/git/pullRequests/1",
+			want: false,
+		},
 	}
 
 	for _, tc := range cases {
@@ -394,4 +425,29 @@ func TestIsADOAPIHost(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 	}
+}
+
+// routedTo returns a client that delivers every request to server, whatever
+// host its URL names, so a test drives the production hydrator against a fake
+// Azure DevOps with its host check still in place.
+func routedTo(t *testing.T, server *httptest.Server) *http.Client {
+	t.Helper()
+	target, err := url.Parse(server.URL)
+	require.NoError(t, err)
+	return &http.Client{
+		Timeout: 2 * time.Second,
+		Transport: roundTripperFunc(func(request *http.Request) (*http.Response, error) {
+			routed := request.Clone(request.Context())
+			routed.URL.Scheme = target.Scheme
+			routed.URL.Host = target.Host
+			return http.DefaultTransport.RoundTrip(routed)
+		}),
+	}
+}
+
+// roundTripperFunc adapts a function to [http.RoundTripper].
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return f(request)
 }

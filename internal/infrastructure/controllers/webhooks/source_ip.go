@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/netip"
 	"strings"
-
-	logger "github.com/sirupsen/logrus"
 )
 
 // Re-exported indirectly: source_ip.go and dispatcher.go share the
@@ -80,7 +78,7 @@ func (d *Dispatcher) enforceSourceIPAllowlist(w http.ResponseWriter, r *http.Req
 	if sourceIPAllowed(ip, d.allowedSourcePrefixes) {
 		return true
 	}
-	logger.Warnf("%s webhook rejected: source IP %s not in allowlist", label, ip)
+	logWarnf("%s webhook rejected: source IP %s not in allowlist", label, ip)
 	writeError(w, http.StatusForbidden, "source IP not allowed")
 	return false
 }

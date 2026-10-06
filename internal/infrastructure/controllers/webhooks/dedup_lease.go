@@ -264,10 +264,10 @@ func (d *K8sLeaseDedup) SeenRecently(ctx context.Context, key string) bool {
 	if _, err := d.client.Create(callCtx, d.buildLease(leaseName)); err == nil {
 		return false
 	} else if !isAlreadyExists(err) {
-		logger.WithFields(logger.Fields{
+		logger.WithFields(deliveryFields(logger.Fields{
 			logFieldKey:       key,
 			logFieldLeaseName: leaseName,
-		}).Warnf("dedup-lease: Create failed (%v) — falling back to process the webhook", err)
+		})).Warnf("dedup-lease: Create failed (%v) — falling back to process the webhook", err)
 		return false
 	}
 
@@ -285,10 +285,10 @@ func (d *K8sLeaseDedup) SeenRecently(ctx context.Context, key string) bool {
 		return true
 	}
 	if err != nil {
-		logger.WithFields(logger.Fields{
+		logger.WithFields(deliveryFields(logger.Fields{
 			logFieldKey:       key,
 			logFieldLeaseName: leaseName,
-		}).Warnf("dedup-lease: Get after AlreadyExists failed (%v) — treating as duplicate to be safe", err)
+		})).Warnf("dedup-lease: Get after AlreadyExists failed (%v) — treating as duplicate to be safe", err)
 		return true
 	}
 
@@ -300,19 +300,19 @@ func (d *K8sLeaseDedup) SeenRecently(ctx context.Context, key string) bool {
 	// Stale lease — take it over with a UID precondition so a renewer
 	// that just refreshed it cannot lose its work to our cleanup.
 	if delErr := d.client.Delete(callCtx, leaseName, existing.Metadata.UID); delErr != nil && !isNotFound(delErr) {
-		logger.WithFields(logger.Fields{
+		logger.WithFields(deliveryFields(logger.Fields{
 			logFieldKey:       key,
 			logFieldLeaseName: leaseName,
 			"holder":          stringValue(existing.Spec.HolderIdentity),
-		}).Warnf("dedup-lease: takeover Delete failed (%v) — treating as duplicate; the next delivery will retry", delErr)
+		})).Warnf("dedup-lease: takeover Delete failed (%v) — treating as duplicate; the next delivery will retry", delErr)
 		return true
 	}
 	if _, retryErr := d.client.Create(callCtx, d.buildLease(leaseName)); retryErr == nil {
-		logger.WithFields(logger.Fields{
+		logger.WithFields(deliveryFields(logger.Fields{
 			logFieldKey:       key,
 			logFieldLeaseName: leaseName,
 			"prev_holder":     stringValue(existing.Spec.HolderIdentity),
-		}).Info("dedup-lease: took over a stale lease (previous holder likely crashed mid-review)")
+		})).Info("dedup-lease: took over a stale lease (previous holder likely crashed mid-review)")
 		return false
 	}
 	// Another pod won the takeover race — they are the new owner.
@@ -385,10 +385,10 @@ func (d *K8sLeaseDedup) Forget(ctx context.Context, key string) {
 	if err == nil || isNotFound(err) {
 		return
 	}
-	logger.WithFields(logger.Fields{
+	logger.WithFields(deliveryFields(logger.Fields{
 		logFieldKey:       key,
 		logFieldLeaseName: leaseName,
-	}).Warnf("dedup-lease: Delete failed (%v) — lease will block new deliveries until the next caller's takeover path runs Get + UID-conditioned Delete", err)
+	})).Warnf("dedup-lease: Delete failed (%v) — lease will block new deliveries until the next caller's takeover path runs Get + UID-conditioned Delete", err)
 }
 
 // Renew refreshes the held lease's `renewTime` so a long-running review

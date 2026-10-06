@@ -209,7 +209,7 @@ func (d *Dispatcher) HandleGitHub(w http.ResponseWriter, r *http.Request) {
 
 	dedupKey := fmt.Sprintf("gh:%s/%s:%d", owner, repoName, job.PR.ID)
 	if d.dedupSeen(r.Context(), dedupKey) {
-		logger.Debugf("GitHub webhook: duplicate delivery for PR #%d in %s/%s — skipping", job.PR.ID, owner, repoName)
+		logDebugf("GitHub webhook: duplicate delivery for PR #%d in %s/%s — skipping", job.PR.ID, owner, repoName)
 		w.WriteHeader(http.StatusOK)
 		_, _ = fmt.Fprint(w, "duplicate")
 		return
@@ -227,7 +227,7 @@ func (d *Dispatcher) HandleGitHub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Infof("GitHub webhook: enqueued PR #%d in %s/%s", job.PR.ID, owner, repoName)
+	logInfof("GitHub webhook: enqueued PR #%d in %s/%s", job.PR.ID, owner, repoName)
 	w.WriteHeader(http.StatusAccepted)
 	_, _ = fmt.Fprint(w, "accepted")
 }
@@ -287,7 +287,7 @@ func (d *Dispatcher) handleGitHubIssueComment(w http.ResponseWriter, r *http.Req
 		return
 	}
 	if event.Issue.PullRequest == nil {
-		logger.Debugf("GitHub webhook: ignoring issue_comment on a non-PR issue #%d", event.Issue.Number)
+		logDebugf("GitHub webhook: ignoring issue_comment on a non-PR issue #%d", event.Issue.Number)
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
@@ -362,7 +362,7 @@ func (d *Dispatcher) handleGitHubReviewComment(w http.ResponseWriter, r *http.Re
 
 func (d *Dispatcher) submitGitHubMention(w http.ResponseWriter, r *http.Request, mention ghMention) {
 	if !support.HasMention(mention.commentBody, d.settings.BotIdentities...) {
-		logger.Debugf(
+		logDebugf(
 			"GitHub webhook: %s on PR #%d mentions neither @code-guru nor a configured bot identity; skipping",
 			mention.eventName, mention.prNumber,
 		)
@@ -376,7 +376,7 @@ func (d *Dispatcher) submitGitHubMention(w http.ResponseWriter, r *http.Request,
 	// This matters more on the inline path, where a re-review posts one
 	// reply per prior thread and each is another delivery.
 	if support.IsBotAuthor(d.settings.BotIdentities...)(mention.commenter) {
-		logger.Debugf(
+		logDebugf(
 			"GitHub webhook: %s on PR #%d is authored by the bot itself (%s); skipping self-triggered re-review",
 			mention.eventName, mention.prNumber, mention.commenter,
 		)
@@ -407,7 +407,7 @@ func (d *Dispatcher) submitGitHubMention(w http.ResponseWriter, r *http.Request,
 	dedupKey := fmt.Sprintf("gh-mention:%s/%s:%d", owner, repoName, mention.prNumber)
 	if mention.dedupe {
 		if d.dedupSeen(r.Context(), dedupKey) {
-			logger.Debugf("GitHub webhook: duplicate %s mention for PR #%d in %s/%s — skipping",
+			logDebugf("GitHub webhook: duplicate %s mention for PR #%d in %s/%s — skipping",
 				mention.eventName, mention.prNumber, owner, repoName)
 			w.WriteHeader(http.StatusOK)
 			_, _ = fmt.Fprint(w, "duplicate")
@@ -427,7 +427,7 @@ func (d *Dispatcher) submitGitHubMention(w http.ResponseWriter, r *http.Request,
 		writeError(w, http.StatusServiceUnavailable, "queue full")
 		return
 	}
-	logger.Infof("GitHub webhook: enqueued %s mention re-review for PR #%d in %s/%s (commenter=%s)",
+	logInfof("GitHub webhook: enqueued %s mention re-review for PR #%d in %s/%s (commenter=%s)",
 		mention.eventName, job.PR.ID, owner, repoName, mention.commenter)
 	w.WriteHeader(http.StatusAccepted)
 	_, _ = fmt.Fprint(w, "accepted")
