@@ -24,23 +24,12 @@ var (
 	IsSkinnyADOResource          = isSkinnyADOResource
 	AppendAPIVersion             = appendAPIVersion
 	IsADOAPIHost                 = isADOAPIHost
+	EscapeLineBreaks             = escapeLineBreaks
+	DeliveryFields               = deliveryFields
+	LogDebugf                    = logDebugf
+	LogInfof                     = logInfof
+	LogWarnf                     = logWarnf
 )
-
-// NewTestHTTPADOHydrator returns a hydrator whose host validator is
-// permissive, so tests can drive it against `httptest.NewServer` (which
-// serves on `127.0.0.1`, a host the production validator correctly
-// refuses as part of the SSRF defence). Production code wires the
-// validator via `NewHTTPADOHydrator`, so this escape hatch never reaches
-// a non-test build.
-func NewTestHTTPADOHydrator(client *http.Client) ADOResourceHydrator {
-	if client == nil {
-		client = &http.Client{Timeout: adoHydrationTimeout}
-	}
-	return &httpADOHydrator{
-		client:        client,
-		hostValidator: func(string) bool { return true },
-	}
-}
 
 // NewTestHTTPADOIdentityResolver returns the production identity
 // resolver pointed at an arbitrary base URL, so tests can drive it

@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -44,13 +45,11 @@ const adoHydrationTimeout = 10 * time.Second
 // httpADOHydrator is the production hydrator. It performs a single GET
 // against the resource URL using the ADO PAT (Basic auth with empty
 // username, PAT as password — the documented scheme for personal access
-// tokens). The host validator is a struct field so tests can opt out of
-// the ADO-host check when driving the hydrator against a local
-// `httptest.NewServer` (which serves on `127.0.0.1`); production code
-// always wires `isADOAPIHost`.
+// tokens). Every URL passes `isADOAPIHost` first, tests included: they
+// drive it against `httptest.NewServer` through a client whose transport
+// delivers the request there, never by relaxing the check.
 type httpADOHydrator struct {
-	client        *http.Client
-	hostValidator func(string) bool
+	client *http.Client
 }
 
 // NewHTTPADOHydrator returns a hydrator that uses the supplied HTTP client.
@@ -60,7 +59,7 @@ func NewHTTPADOHydrator(client *http.Client) ADOResourceHydrator {
 	if client == nil {
 		client = &http.Client{Timeout: adoHydrationTimeout}
 	}
-	return &httpADOHydrator{client: client, hostValidator: isADOAPIHost}
+	return &httpADOHydrator{client: client}
 }
 
 // Hydrate fetches the full PR resource at resourceURL using the PAT.
@@ -76,7 +75,7 @@ func (h *httpADOHydrator) Hydrate(ctx context.Context, resourceURL, token string
 	if err != nil {
 		return adoResource{}, fmt.Errorf("malformed resource URL: %w", err)
 	}
-	if !h.hostValidator(hydrationURL) {
+	if !isADOAPIHost(hydrationURL) {
 		return adoResource{}, fmt.Errorf("refusing to hydrate non-ADO host in %q", hydrationURL)
 	}
 
@@ -130,27 +129,28 @@ func appendAPIVersion(raw, version string) (string, error) {
 	return u.String(), nil
 }
 
+// adoAPIURL matches the URLs Azure DevOps serves its REST API from: https,
+// then `dev.azure.com` or an organization's `*.visualstudio.com` host
+// (regional ones such as `org.eu.visualstudio.com` included), then a path
+// free of control characters, which no URL may carry. The host has to follow
+// the scheme directly and the path the host, so neither user info nor a port
+// can bring another host or service in.
+var adoAPIURL = regexp.MustCompile(
+	`(?i)^https://(?:dev\.azure\.com|(?:[a-z0-9-]+\.)+visualstudio\.com)/[^\x00-\x1f\x7f]*$`,
+)
+
 // isADOAPIHost validates that a URL points at an Azure DevOps host before
 // the hydrator dispatches an authenticated request to it. The webhook
 // payload's `resource.url` is operator-untrusted data — anyone able to
 // forge a delivery past the source-IP / Basic-auth gate could otherwise
 // trick the bot into making PAT-authenticated requests to an attacker-
-// controlled host (CodeQL `go/ssrf` finding). Allow only the two host
-// shapes ADO actually uses for REST endpoints: `dev.azure.com` and
-// `*.visualstudio.com` (mirroring the org-extraction logic).
+// controlled host (CodeQL `go/request-forgery`). Only the two host shapes
+// ADO actually uses for REST endpoints pass: `dev.azure.com` and
+// `*.visualstudio.com` (mirroring the org-extraction logic). It is one
+// pattern match on the URL, returned as it is: CodeQL follows a check to the
+// request only through a function that returns the check alone.
 func isADOAPIHost(rawURL string) bool {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return false
-	}
-	if u.Scheme != "https" {
-		return false
-	}
-	host := strings.ToLower(u.Hostname())
-	if host == "dev.azure.com" {
-		return true
-	}
-	return strings.HasSuffix(host, ".visualstudio.com")
+	return adoAPIURL.MatchString(rawURL)
 }
 
 // mergeHydratedADOResource combines the original webhook resource with the

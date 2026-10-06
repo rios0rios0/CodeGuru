@@ -1,0 +1,3 @@
+kind: 'Security'
+body: 'escaped line breaks in the webhook data the server logs, so a value from a delivery can no longer start a forged log line, and checked the Azure DevOps hydration URL against an anchored pattern that also refuses user info and ports, called directly where the request is built'
+time: '2026-10-06T15:27:15.455641684Z'

@@ -124,7 +124,7 @@ func (d *Dispatcher) HandleAzureDevOps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isClosedADOPullRequestStatus(event.Resource.Status) {
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: PR #%d status %q is closed",
 			event.Resource.PullRequestID,
 			event.Resource.Status,
@@ -166,7 +166,7 @@ func (d *Dispatcher) HandleAzureDevOps(w http.ResponseWriter, r *http.Request) {
 		// before `resource`, which was the entire diagnostic of value.
 		// 32 KB is still a constant per request and still eligible for
 		// the `truncationSentinel` tail.
-		logger.WithFields(logger.Fields{
+		logger.WithFields(deliveryFields(logger.Fields{
 			"event_type":   event.EventType,
 			"pull_id":      event.Resource.PullRequestID,
 			"status":       event.Resource.Status,
@@ -177,7 +177,7 @@ func (d *Dispatcher) HandleAzureDevOps(w http.ResponseWriter, r *http.Request) {
 			"body_length":  len(body),
 			"body_head":    support.TruncateBytesForLog(body, adoRawBodyLogLimit),
 			"parsed_org":   org,
-		}).Warnf("ADO webhook: org=%q project=%q not on allowlist", org, event.Resource.Repository.Project.Name)
+		})).Warnf("ADO webhook: org=%q project=%q not on allowlist", org, event.Resource.Repository.Project.Name)
 		writeError(w, http.StatusForbidden, "forbidden")
 		return
 	}
@@ -211,7 +211,7 @@ func (d *Dispatcher) HandleAzureDevOps(w http.ResponseWriter, r *http.Request) {
 
 	dedupKey := fmt.Sprintf("ado:%s:%d", repo.ID, pr.ID)
 	if d.dedupSeen(r.Context(), dedupKey) {
-		logger.Debugf("ADO webhook: duplicate delivery for PR #%d in %s/%s — skipping", pr.ID, repo.Project, repo.Name)
+		logDebugf("ADO webhook: duplicate delivery for PR #%d in %s/%s — skipping", pr.ID, repo.Project, repo.Name)
 		w.WriteHeader(http.StatusOK)
 		_, _ = fmt.Fprint(w, "duplicate")
 		return
@@ -230,7 +230,7 @@ func (d *Dispatcher) HandleAzureDevOps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Infof("ADO webhook: enqueued PR #%d in %s/%s", pr.ID, repo.Project, repo.Name)
+	logInfof("ADO webhook: enqueued PR #%d in %s/%s", pr.ID, repo.Project, repo.Name)
 	w.WriteHeader(http.StatusAccepted)
 	_, _ = fmt.Fprint(w, "accepted")
 }
@@ -329,14 +329,14 @@ func (d *Dispatcher) hydrateSkinnyADOResource(
 	token string,
 ) bool {
 	if !isSkinnyADOResource(event.Resource) {
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: PR #%d arrived with full resource block (project-scoped subscription) — skipping hydration",
 			event.Resource.PullRequestID,
 		)
 		return true
 	}
 
-	logger.Debugf(
+	logDebugf(
 		"ADO webhook: PR #%d arrived with skinny resource block (org-wide subscription) — hydrating via REST API",
 		event.Resource.PullRequestID,
 	)
@@ -349,7 +349,7 @@ func (d *Dispatcher) hydrateSkinnyADOResource(
 
 	hydrated, err := d.adoHydrator.Hydrate(r.Context(), event.Resource.URL, token)
 	if err != nil {
-		logger.Warnf(
+		logWarnf(
 			"ADO webhook: hydrate PR #%d via %q failed: %v",
 			event.Resource.PullRequestID,
 			event.Resource.URL,
@@ -364,7 +364,7 @@ func (d *Dispatcher) hydrateSkinnyADOResource(
 	// `git.pullrequest.updated` for an `abandoned` PR carries an empty
 	// `status` in the skinny shape, so the earlier check let it through.
 	if isClosedADOPullRequestStatus(event.Resource.Status) {
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: PR #%d hydrated to status %q (closed)",
 			event.Resource.PullRequestID,
 			event.Resource.Status,
@@ -445,7 +445,7 @@ func (d *Dispatcher) handleADOComment(w http.ResponseWriter, r *http.Request, bo
 		d.settings.BotIdentities...)(
 		commenter,
 	) {
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: comment on PR #%d is authored by the bot itself (%s); skipping self-triggered re-review",
 			event.Resource.PullRequest.PullRequestID, commenter,
 		)
@@ -505,7 +505,7 @@ func (d *Dispatcher) handleADOComment(w http.ResponseWriter, r *http.Request, bo
 		return
 	}
 	commenter := adoIdentityName(event.Resource.Comment.Author)
-	logger.Infof("ADO webhook: enqueued mention re-review for PR #%d in %s/%s (commenter=%s)",
+	logInfof("ADO webhook: enqueued mention re-review for PR #%d in %s/%s (commenter=%s)",
 		pr.PullRequestID, repo.Project, repo.Name, commenter)
 	w.WriteHeader(http.StatusAccepted)
 	_, _ = fmt.Fprint(w, "accepted")
@@ -548,7 +548,7 @@ func (d *Dispatcher) adoCommentMentionsBot(ctx context.Context, event *adoCommen
 
 	mentionedIDs := support.ExtractMentionedIdentityIDs(content)
 	if len(mentionedIDs) == 0 {
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: comment on PR #%d mentions neither @code-guru nor a configured bot identity; skipping",
 			prID,
 		)
@@ -559,7 +559,7 @@ func (d *Dispatcher) adoCommentMentionsBot(ctx context.Context, event *adoCommen
 	selfID := d.resolveADOSelfIdentity(ctx, org)
 	for _, id := range mentionedIDs {
 		if support.EqualIdentityID(selfID, id) {
-			logger.Infof(
+			logInfof(
 				"ADO webhook: comment on PR #%d @-mentions this bot's own Azure DevOps identity (%q); treating as a re-review request",
 				prID,
 				selfID,
@@ -573,7 +573,7 @@ func (d *Dispatcher) adoCommentMentionsBot(ctx context.Context, event *adoCommen
 		// We compared and these ids belong to somebody else. One human
 		// @-mentioning another is the COMMON use of this markup, not a
 		// failure, so it stays out of the operator's default log view.
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: comment on PR #%d @-mentions %v, none of which is this bot (%q); skipping",
 			prID,
 			mentionedIDs,
@@ -584,7 +584,7 @@ func (d *Dispatcher) adoCommentMentionsBot(ctx context.Context, event *adoCommen
 		// autocompleted mention OF THIS BOT would be dropped right here
 		// with nothing to show for it. That is the silent failure this
 		// path exists to end, and it is the only branch that earns Info.
-		logger.Infof(
+		logInfof(
 			"ADO webhook: comment on PR #%d carries @-autocompleted mention(s) %v but this bot's own Azure DevOps "+
 				"identity could not be resolved, so a mention of it cannot be recognised — check the azuredevops PAT "+
 				"and the preceding log line, or list the account in `bot_identities`; skipping",
@@ -594,7 +594,7 @@ func (d *Dispatcher) adoCommentMentionsBot(ctx context.Context, event *adoCommen
 	default:
 		// Off-allowlist: no lookup was attempted (see resolveADOSelfIdentity),
 		// so there is nothing here an operator asked to hear about.
-		logger.Debugf(
+		logDebugf(
 			"ADO webhook: comment on PR #%d is for off-allowlist org %q; no identity lookup was attempted; skipping",
 			prID,
 			org,
@@ -630,7 +630,7 @@ func (d *Dispatcher) resolveADOSelfIdentity(ctx context.Context, organization st
 
 	selfID, err := d.adoIdentityResolver.ResolveSelfID(ctx, organization, token)
 	if err != nil {
-		logger.Warnf(
+		logWarnf(
 			"ADO webhook: could not resolve this bot's own Azure DevOps identity in org %q "+
 				"(@-autocompleted mentions of it will not be recognised): %v",
 			organization, err,
