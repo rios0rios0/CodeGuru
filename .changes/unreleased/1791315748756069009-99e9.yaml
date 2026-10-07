@@ -1,3 +1,0 @@
-kind: 'Changed'
-body: 'changed the gitforge dependency from `github.com/rios0rios0/gitforge` `v1.0.1-0.20260723193418-4150608363f0` to `github.com/rios0rios0/gitforge/v4` `v4.2.10`: the unsuffixed module path never resolved past `v1.0.0`, so gitforge could only be pinned to a pseudo-version and dependency updates never reached it'
-time: '2026-10-06T19:42:28.756017418Z'
