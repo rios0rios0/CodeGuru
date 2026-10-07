@@ -22,6 +22,21 @@ Exceptions are acceptable depending on the circumstances (critical bug fixes tha
 
 ## [Unreleased]
 
+## [1.19.3] - 2026-10-07
+
+### Changed
+
+- changed the gitforge dependency from `github.com/rios0rios0/gitforge` `v1.0.1-0.20260723193418-4150608363f0` to `github.com/rios0rios0/gitforge/v4` `v4.2.10`: the unsuffixed module path never resolved past `v1.0.0`, so gitforge could only be pinned to a pseudo-version and dependency updates never reached it
+- changed the Go module dependencies to their latest versions
+
+### Fixed
+
+- fixed shell completion and the container health probe checking for a newer release: `completion`, which a shell runs from its startup file, the `__complete` requests behind every TAB press and the `health` command the image's `HEALTHCHECK` runs every 30 seconds each started a lookup nobody could see, spending the day's update check before a review ever ran
+
+### Security
+
+- escaped line breaks in the webhook data the server logs, so a value from a delivery can no longer start a forged log line, and checked the Azure DevOps hydration URL against an anchored pattern that also refuses user info and ports, called directly where the request is built
+
 ## [1.19.2] - 2026-09-30
 
 ### Changed
