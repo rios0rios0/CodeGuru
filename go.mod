@@ -4,10 +4,10 @@ go 1.27.1
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/rios0rios0/cliforge v0.4.7
+	github.com/rios0rios0/cliforge v0.5.0
 	github.com/rios0rios0/gitforge/v4 v4.2.10
-	github.com/rios0rios0/langforge v1.1.7
-	github.com/rios0rios0/testkit v0.3.4
+	github.com/rios0rios0/langforge v1.1.8
+	github.com/rios0rios0/testkit v0.3.5
 	github.com/sashabaranov/go-openai v1.43.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
