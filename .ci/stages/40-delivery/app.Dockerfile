@@ -5,7 +5,7 @@
 # builder older than that directive does not quietly download a newer
 # toolchain -- it fails the build outright with
 # `go.mod requires go >= X (running go Y; GOTOOLCHAIN=local)`.
-FROM golang:1.27.1-alpine AS builder
+FROM golang:1.27.2-alpine AS builder
 WORKDIR /src
 
 RUN apk add --no-cache git ca-certificates
